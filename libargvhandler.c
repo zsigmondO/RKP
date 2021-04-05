@@ -99,7 +99,7 @@ void handle_argv(int argc, char** argv)
 							token = strtok(NULL, "=");
 
 							printf("%s", token);
-	        				token = strtok(NULL, "=");
+	        					token = strtok(NULL, "=");
 						}
 
 						fclose(fp);
