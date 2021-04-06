@@ -19,8 +19,29 @@ This function does the following things:
 	Optimalized code. 
 		The user cannot break the program by giving too many command line options.
 */
-void handle_argv(int argc, char** argv) 
+int handle_argv(int argc, char** argv) 
 {
+	if (argc != 1)
+	{
+		if (strcmp(argv[1], "testmode") == 0)
+		{
+			printf("%c[1m", ESC); //changes text to bold
+			printf("RKP main.c: ");
+
+			printf("program executed with testmode command line option!\n");
+
+			printf("%c[0m", ESC); //changes text back to normal non-bold text
+
+			printf("In this mode other command line options are ignored.\n");
+
+			printf("For further information call the program with '--help'.\n");
+
+			puts("");
+
+			return 1337;
+		}
+	}
+
 	if (argc == 1) //the program was called without any option
 	{
 		printf("%c[1m", ESC); //changes text to bold
@@ -105,7 +126,6 @@ void handle_argv(int argc, char** argv)
 						fclose(fp);
 
 					}
-
 				} 
 				else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-help") == 0) 
 				{
@@ -124,7 +144,6 @@ void handle_argv(int argc, char** argv)
 
 						printf("Give a TrueColor bmp image file as an argument for decoding.\n");
 					}
-
 				} 
 				else 
 				{
@@ -181,4 +200,6 @@ void handle_argv(int argc, char** argv)
 			}
 		}
 	}
+
+	return 0;
 }
