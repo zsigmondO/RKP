@@ -9,197 +9,148 @@
 #define MAXLINESIZE 512
 #define ESC 27
 
-/*
-This function does the following things:
-	Handling different command line options.
-	Checking if the given command line option is acceptable.
-	Checks the image, if its openable, executable, got read permission and so on.
-	Uses a .env file for safety reasons.
-	Pretty print: using nice print highlight.
-	Optimalized code. 
-		The user cannot break the program by giving too many command line options.
-*/
-int handle_argv(int argc, char** argv) 
-{
-	if (argc != 1)
-	{
-		if (strcmp(argv[1], "testmode") == 0)
-		{
-			printf("%c[1m", ESC); //changes text to bold
-			printf("RKP main.c: ");
+int handle_argv(int argc, char **argv) {
 
-			printf("program executed with testmode command line option!\n");
+    int index_of_picture = 1337;
 
-			printf("%c[0m", ESC); //changes text back to normal non-bold text
+    if (argc == 1) {
+        printf("%c[1m", ESC); //changes text to bold
+        printf("RKP main.c: ");
+        printf("%c[0m", ESC); //changes text back to normal non-bold text
 
-			printf("In this mode other command line options are ignored.\n");
+        printf("program starting.\n");
+        printf("Broswer was called.\n");
 
-			printf("For further information call the program with '--help'.\n");
+        return (111);
 
-			puts("");
+    } else if (argc == 2 && argv[1][0] != '-') {
+        return (222); //file as input. but can be NULL!!
 
-			return 1337;
-		}
-	}
+    } else {
 
-	if (argc == 1) //the program was called without any option
-	{
-		printf("%c[1m", ESC); //changes text to bold
-		printf("RKP main.c: ");
+        int version_was_printed_before = 0;
 
-		printf("\033[0;31m"); //changes color to red
-		printf("fatal error: ");
-		printf("%c[0m", ESC); //changes text back to normal non-bold text
-		printf("\033[0m"); //changes back to normal color
-		
-		printf("no input file\n");
-		printf("compilation terminated.\n");
+        int help_was_printed_before = 0;
 
-		printf("%c[1m", ESC); //changes text to bold
-		printf("RKP tip: ");
-		printf("%c[0m", ESC); //changes text back to normal non-bold text
-		printf("use the --help command line option for further information.\n");
-
-		exit(1);
-
-	}
-	else //the program was called with options, but...
-	{
-		
-		int version_was_printed_before = 0;
-		
-		int help_was_printed_before = 0;
-			
-		int only_one_picture_is_allowed = 0;
+        int only_one_picture_is_allowed = 0;
 
 
-		for (int i = 1; i < argc; ++i)
-		{
+        for (int i = 1; i < argc; ++i) {
 
-			if (argv[i][0] == '-')
-			{
-				if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-version") == 0)
-				{
-					if (!version_was_printed_before)
-					{
+            if (argv[i][0] == '-') {
+                if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-version") == 0) {
+                    if (!version_was_printed_before) {
 
-						version_was_printed_before = 1;
+                        version_was_printed_before = 1;
 
-						int saved_errno = 0;
+                        int saved_errno = 0;
 
-						FILE* fp = fopen(ENVFILENAME, "r");
+                        FILE *fp = fopen(ENVFILENAME, "r");
 
-						saved_errno = errno;
+                        saved_errno = errno;
 
-						if (!fp)
-						{
+                        if (!fp) {
 
-							printf("%c[1m", ESC); //changes text to bold
-							printf("RKP main.c: ");
+                            printf("%c[1m", ESC); //changes text to bold
+                            printf("RKP main.c: ");
 
-							printf("\033[0;31m"); //changes color to red
-							printf("fatal error: ");
-							printf("%c[0m", ESC); //changes text back to normal non-bold text
-							printf("\033[0m"); //changes back to normal color
-							
-							printf("failed opening the .env file, error code: %d\n", saved_errno);
-							printf("compilation terminated.\n");
+                            printf("\033[0;31m"); //changes color to red
+                            printf("fatal error: ");
+                            printf("%c[0m", ESC); //changes text back to normal non-bold text
+                            printf("\033[0m"); //changes back to normal color
 
-							fclose(fp);
-							exit(1);
+                            printf("failed opening the .env file, error code: %d\n", saved_errno);
+                            printf("compilation terminated.\n");
 
-						}
+                            exit(1);
 
-						char line_buffer[MAXLINESIZE];
+                        }
 
-						line_buffer[strlen(line_buffer) - 3] = '\0';
+                        char line_buffer[MAXLINESIZE] = {0};
 
-						while(fgets(line_buffer, MAXLINESIZE, fp)) 
-						{
-							char* token = strtok(line_buffer, "=");
-							token = strtok(NULL, "=");
+                        line_buffer[strlen(line_buffer) - 3] = '\0';
 
-							printf("%s", token);
-	        					token = strtok(NULL, "=");
-						}
+                        while (fgets(line_buffer, MAXLINESIZE, fp)) {
+                            char *token = strtok(line_buffer, "=");
+                            token = strtok(NULL, "=");
 
-						fclose(fp);
+                            printf("%s", token);
+                            token = strtok(NULL, "=");
+                        }
 
-					}
-				} 
-				else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-help") == 0) 
-				{
-					if (!help_was_printed_before)
-					{
+                        puts("");
 
-						help_was_printed_before = 1;
+                        fclose(fp);
 
-						printf("Program manual:\n");
-						printf("%c[1m", ESC); //changes text to bold
-						printf("RKP tips:\n");
-						printf("%c[0m", ESC); //changes text back to normal non-bold text
-						
-						printf("Use the --version command line option "
-							   "for getting detailed information about the program.\n\n");
+                    }
+                } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-help") == 0) {
+                    if (!help_was_printed_before) {
 
-						printf("Give a TrueColor bmp image file as an argument for decoding.\n");
-					}
-				} 
-				else 
-				{
-					printf("%c[1m", ESC); //changes text to bold
-					printf("RKP main.c: ");
+                        help_was_printed_before = 1;
 
-					printf("\033[0;31m"); //changes color to red
-					printf("error: ");
-					printf("%c[0m", ESC); //changes text back to normal non-bold text
-					printf("\033[0m"); //changes back to normal color
-					
-					printf("unrecognized command line option '%s'\n", argv[i]);
-					printf("compilation terminated.\n");
+                        printf("Program manual:\n");
+                        printf("%c[1m", ESC); //changes text to bold
+                        printf("RKP tips:\n");
+                        printf("%c[0m", ESC); //changes text back to normal non-bold text
 
-					exit(1);
+                        printf("Use the --version command line option "
+                               "for getting detailed information about the program.\n\n");
 
-				}
-			}
-			else 
-			{
-				if (!only_one_picture_is_allowed)
-				{
+                        printf("Give a TrueColor bmp image file as an argument for decoding.\n");
+                        
+                    }
+                } else {
+                    printf("%c[1m", ESC); //changes text to bold
+                    printf("RKP main.c: ");
 
-					only_one_picture_is_allowed = 1;
+                    printf("\033[0;31m"); //changes color to red
+                    printf("error: ");
+                    printf("%c[0m", ESC); //changes text back to normal non-bold text
+                    printf("\033[0m"); //changes back to normal color
 
-					if (access(argv[i], F_OK) != 0 || access(argv[i], R_OK) != 0)
-					{
-						printf("%c[1m", ESC); //changes text to bold
-						printf("RKP main.c: ");
+                    printf("unrecognized command line option '%s'\n", argv[i]);
+                    printf("compilation terminated.\n");
 
-						printf("\033[0;31m"); //changes color to red
-						printf("fatal error: ");
-						printf("%c[0m", ESC); //changes text back to normal non-bold text
-						printf("\033[0m"); //changes back to normal color
-						
-						printf("input file '%s' does not exists,\n"
-							"or no execute/read permission is given\n", argv[i]);
-						printf("compilation terminated.\n");
+                    exit(1);
 
-					} 
-					else
-					{
-						printf("%c[1m", ESC); //changes text to bold
-						printf("RKP main.c: ");
+                }
+            } else {
+                if (!only_one_picture_is_allowed) {
 
-						printf("\033[0;32m"); //changes color to green
-						printf("%c[0m", ESC); //changes text back to normal non-bold text
-						printf("\033[0m"); //changes back to normal color
-						
-						printf("file '%s' was found successfully!\n", argv[i]);
+                    only_one_picture_is_allowed = 1;
 
-					}
-				}
-			}
-		}
-	}
+                    if (access(argv[i], F_OK) != 0 || access(argv[i], R_OK) != 0) {
+                        printf("%c[1m", ESC); //changes text to bold
+                        printf("RKP main.c: ");
 
-	return 0;
+                        printf("\033[0;31m"); //changes color to red
+                        printf("fatal error: ");
+                        printf("%c[0m", ESC); //changes text back to normal non-bold text
+                        printf("\033[0m"); //changes back to normal color
+
+                        printf("input file '%s' does not exists,\n"
+                               "or no execute/read permission is given\n", argv[i]);
+                        printf("compilation terminated.\n");
+
+                        exit(1);
+
+                    } else {
+                        printf("%c[1m", ESC); //changes text to bold
+                        printf("RKP main.c: ");
+
+                        printf("\033[0;32m"); //changes color to green
+                        printf("%c[0m", ESC); //changes text back to normal non-bold text
+                        printf("\033[0m"); //changes back to normal color
+
+                        printf("file '%s' was found successfully!\n", argv[i]);
+
+                        index_of_picture = i;
+
+                    }
+                }
+            }
+        }
+    }
+
+    return index_of_picture;
 }
